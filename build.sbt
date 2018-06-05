@@ -6,6 +6,8 @@ scalaVersion in ThisBuild := "2.12.4"
 
 val macwire = "com.softwaremill.macwire" %% "macros" % "2.3.0" % "provided"
 val scalaTest = "org.scalatest" %% "scalatest" % "3.0.4" % Test
+val logback = "ch.qos.logback" % "logback-classic" % "1.2.3"
+val logging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0"
 
 lazy val `lagom-pi` = (project in file("."))
   .aggregate(`lagom-pi-api`, `lagom-pi-impl`, `lagom-pi-stream-api`, `lagom-pi-stream-impl`)
@@ -25,7 +27,8 @@ lazy val `lagom-pi-impl` = (project in file("lagom-pi-impl"))
       lagomScaladslKafkaBroker,
       lagomScaladslTestKit,
       macwire,
-      scalaTest
+      scalaTest,
+      logback, logging
     )
   )
   .settings(lagomForkedTestSettings: _*)
@@ -44,7 +47,8 @@ lazy val `lagom-pi-stream-impl` = (project in file("lagom-pi-stream-impl"))
     libraryDependencies ++= Seq(
       lagomScaladslTestKit,
       macwire,
-      scalaTest
+      scalaTest,
+      logback, logging
     )
   )
   .dependsOn(`lagom-pi-stream-api`, `lagom-pi-api`)

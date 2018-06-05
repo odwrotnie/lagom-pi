@@ -12,7 +12,7 @@ import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
   */
 trait LagompiStreamService extends Service {
 
-  def stream: ServiceCall[Source[String, NotUsed], Source[String, NotUsed]]
+  def stream: ServiceCall[NotUsed, Source[Double, NotUsed]]
 
   override final def descriptor = {
     import Service._
@@ -23,4 +23,3 @@ trait LagompiStreamService extends Service {
       ).withAutoAcl(true)
   }
 }
-

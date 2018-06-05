@@ -21,7 +21,7 @@ class LagompiServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAfter
   "lagom-pi service" should {
 
     "say hello" in {
-      client.hello("Alice").invoke().map { answer =>
+      client.leibniz("Alice").invoke().map { answer =>
         answer should ===("Hello, Alice!")
       }
     }
@@ -29,7 +29,7 @@ class LagompiServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAfter
     "allow responding with a custom message" in {
       for {
         _ <- client.useGreeting("Bob").invoke(GreetingMessage("Hi"))
-        answer <- client.hello("Bob").invoke()
+        answer <- client.leibniz("Bob").invoke()
       } yield {
         answer should ===("Hi, Bob!")
       }

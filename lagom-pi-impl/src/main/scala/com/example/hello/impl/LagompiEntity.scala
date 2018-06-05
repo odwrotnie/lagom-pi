@@ -10,44 +10,21 @@ import play.api.libs.json.{Format, Json}
 
 import scala.collection.immutable.Seq
 
-/**
-  * This is an event sourced entity. It has a state, [[LagompiState]], which
-  * stores what the greeting should be (eg, "Hello").
-  *
-  * Event sourced entities are interacted with by sending them commands. This
-  * entity supports two commands, a [[UseGreetingMessage]] command, which is
-  * used to change the greeting, and a [[Hello]] command, which is a read
-  * only command which returns a greeting to the name specified by the command.
-  *
-  * Commands get translated to events, and it's the events that get persisted by
-  * the entity. Each event will have an event handler registered for it, and an
-  * event handler simply applies an event to the current state. This will be done
-  * when the event is first created, and it will also be done when the entity is
-  * loaded from the database - each event will be replayed to recreate the state
-  * of the entity.
-  *
-  * This entity defines one event, the [[GreetingMessageChanged]] event,
-  * which is emitted when a [[UseGreetingMessage]] command is received.
-  */
-class LagompiEntity extends PersistentEntity {
+import com.typesafe.scalalogging._
+
+class LagompiEntity
+  extends PersistentEntity
+  with LazyLogging {
 
   override type Command = LagompiCommand[_]
   override type Event = LagompiEvent
   override type State = LagompiState
 
-  /**
-    * The initial state. This is used if there is no snapshotted state to be found.
-    */
   override def initialState: LagompiState = LagompiState("Hello", LocalDateTime.now.toString)
 
-  /**
-    * An entity can define different behaviours for different states, so the behaviour
-    * is a function of the current state to a set of actions.
-    */
   override def behavior: Behavior = {
     case LagompiState(message, _) => Actions().onCommand[UseGreetingMessage, Done] {
 
-      // Command handler for the UseGreetingMessage command
       case (UseGreetingMessage(newMessage), ctx, state) =>
         // In response to this command, we want to first persist it as a
         // GreetingMessageChanged event
@@ -58,13 +35,11 @@ class LagompiEntity extends PersistentEntity {
           ctx.reply(Done)
         }
 
-    }.onReadOnlyCommand[Hello, String] {
-
-      // Command handler for the Hello command
-      case (Hello(name), ctx, state) =>
-        // Reply with a message built from the current message, and the name of
-        // the person we're meant to say hello to.
-        ctx.reply(s"$message, $name!")
+    }.onReadOnlyCommand[L, Double] {
+      case (L(n), ctx, state) =>
+        val l = math.pow(-1, n.toDouble) / (2 * n + 1)
+        logger.info(s"Service - Leibniz($n) = $l")
+        ctx.reply(l)
 
     }.onEvent {
 
@@ -150,41 +125,17 @@ object UseGreetingMessage {
   implicit val format: Format[UseGreetingMessage] = Json.format
 }
 
-/**
-  * A command to say hello to someone using the current greeting message.
-  *
-  * The reply type is String, and will contain the message to say to that
-  * person.
-  */
-case class Hello(name: String) extends LagompiCommand[String]
+case class L(n: Long) extends LagompiCommand[Double]
 
-object Hello {
+object L {
 
-  /**
-    * Format for the hello command.
-    *
-    * Persistent entities get sharded across the cluster. This means commands
-    * may be sent over the network to the node where the entity lives if the
-    * entity is not on the same node that the command was issued from. To do
-    * that, a JSON format needs to be declared so the command can be serialized
-    * and deserialized.
-    */
-  implicit val format: Format[Hello] = Json.format
+  implicit val format: Format[L] = Json.format
 }
 
-/**
-  * Akka serialization, used by both persistence and remoting, needs to have
-  * serializers registered for every type serialized or deserialized. While it's
-  * possible to use any serializer you want for Akka messages, out of the box
-  * Lagom provides support for JSON, via this registry abstraction.
-  *
-  * The serializers are registered here, and then provided to Lagom in the
-  * application loader.
-  */
 object LagompiSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     JsonSerializer[UseGreetingMessage],
-    JsonSerializer[Hello],
+    JsonSerializer[L],
     JsonSerializer[GreetingMessageChanged],
     JsonSerializer[LagompiState]
   )

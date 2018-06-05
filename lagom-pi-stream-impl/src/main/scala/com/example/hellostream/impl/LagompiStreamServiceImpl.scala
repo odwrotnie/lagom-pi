@@ -1,16 +1,30 @@
 package com.example.hellostream.impl
 
+import akka.stream.scaladsl.Source
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.example.hellostream.api.LagompiStreamService
 import com.example.hello.api.LagompiService
+import com.typesafe.scalalogging.LazyLogging
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * Implementation of the LagompiStreamService.
-  */
-class LagompiStreamServiceImpl(lagompiService: LagompiService) extends LagompiStreamService {
-  def stream = ServiceCall { hellos =>
-    Future.successful(hellos.mapAsync(8)(lagompiService.hello(_).invoke()))
+class LagompiStreamServiceImpl(lagompiService: LagompiService)(implicit ec: ExecutionContext)
+  extends LagompiStreamService
+    with LazyLogging {
+
+  def stream = ServiceCall { n =>
+
+    val src = Source(0l to 100000l)
+    var pi: Double = 0d
+
+    Future.successful(src.mapAsync(1) { x: Long =>
+      lagompiService.leibniz(x)
+        .invoke()
+        .map { l =>
+          logger.info(s"PI (iteration: $n) = $pi")
+          pi = pi + l * 4
+          pi
+        }
+    })
   }
 }
