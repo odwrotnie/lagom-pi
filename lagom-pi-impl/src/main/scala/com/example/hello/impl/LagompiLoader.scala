@@ -29,12 +29,9 @@ abstract class LagompiApplication(context: LagomApplicationContext)
     with LagomKafkaComponents
     with AhcWSComponents {
 
-  // Bind the service that this server provides
   override lazy val lagomServer = serverFor[LagompiService](wire[LagompiServiceImpl])
 
-  // Register the JSON serializer registry
   override lazy val jsonSerializerRegistry = LagompiSerializerRegistry
 
-  // Register the lagom-pi persistent entity
   persistentEntityRegistry.register(wire[LagompiEntity])
 }

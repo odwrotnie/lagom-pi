@@ -12,7 +12,7 @@ class LagompiStreamServiceImpl(lagompiService: LagompiService)(implicit ec: Exec
   extends LagompiStreamService
     with LazyLogging {
 
-  def stream = ServiceCall { n =>
+  def stream = ServiceCall { _ =>
 
     val src = Source(0l to 100000l)
     var pi: Double = 0d
@@ -21,7 +21,7 @@ class LagompiStreamServiceImpl(lagompiService: LagompiService)(implicit ec: Exec
       lagompiService.leibniz(x)
         .invoke()
         .map { l =>
-          logger.info(s"PI (iteration: $n) = $pi")
+          logger.info(s"PI (iteration: $x) = $pi")
           pi = pi + l * 4
           pi
         }

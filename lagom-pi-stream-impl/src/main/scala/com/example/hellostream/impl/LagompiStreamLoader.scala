@@ -25,9 +25,7 @@ abstract class LagompiStreamApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
     with AhcWSComponents {
 
-  // Bind the service that this server provides
   override lazy val lagomServer = serverFor[LagompiStreamService](wire[LagompiStreamServiceImpl])
 
-  // Bind the LagompiService client
   lazy val lagompiService = serviceClient.implement[LagompiService]
 }
