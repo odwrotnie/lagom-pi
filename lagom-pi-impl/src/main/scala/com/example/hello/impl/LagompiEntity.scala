@@ -23,9 +23,9 @@ class LagompiEntity
   override def behavior: Behavior = {
     case LagompiState(message, _) => Actions().onReadOnlyCommand[L, Double] {
       case (L(n), ctx, state) =>
-        val l = math.pow(-1, n.toDouble) / (2 * n + 1)
-        logger.info(s"Service - Leibniz($n) = $l")
-        ctx.reply(l)
+        ctx.reply {
+          ???
+        }
     }
   }
 }

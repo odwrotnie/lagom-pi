@@ -11,7 +11,7 @@ trait LagompiService extends Service {
     import Service._
     named("lagom-pi")
       .withCalls(
-        pathCall("/api/leibniz/:n", leibniz _)
+        ???
       )
       .withAutoAcl(true)
   }

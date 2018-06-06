@@ -1,5 +1,6 @@
 package com.example.hellostream.impl
 
+import akka.NotUsed
 import akka.stream.scaladsl.Source
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.example.hellostream.api.LagompiStreamService
@@ -14,17 +15,12 @@ class LagompiStreamServiceImpl(lagompiService: LagompiService)(implicit ec: Exec
 
   def stream = ServiceCall { _ =>
 
-    val src = Source(0l to 100000l)
+    def str(i: Long = 0): Stream[Long] = i #:: str(i + 1)
+    val src: Source[Long, NotUsed] = Source(str(0))
     var pi: Double = 0d
 
     Future.successful(src.mapAsync(1) { x: Long =>
-      lagompiService.leibniz(x)
-        .invoke()
-        .map { l =>
-          logger.info(s"PI (iteration: $x) = $pi")
-          pi = pi + l * 4
-          pi
-        }
+      ???
     })
   }
 }
